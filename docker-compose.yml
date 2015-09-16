@@ -1,0 +1,9 @@
+ams:
+    build: .
+    domainname: ams.dev
+    hostname: mediaserver
+    ports:
+        - "1935:1935"
+        - "1111:1111"
+        - "443:443"
+        - "80:80"

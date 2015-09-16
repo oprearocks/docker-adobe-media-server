@@ -1,0 +1,492 @@
+<Adaptor>
+
+	<ResourceLimits>
+		<!-- Max number of failures an edge can may incur before waiting some -->
+		<!-- period of time to restart the edge.                              -->
+		<MaxFailures>2</MaxFailures>
+
+		<!-- Once an edge fails x number of times, wait this long (specified  -->
+		<!-- in seconds) before restarting the edge.                          -->
+		<RecoveryTime>0</RecoveryTime>
+	</ResourceLimits>
+
+	<!-- This tag contains a list of <HostPort> tags. -->
+	<HostPortList>
+		<!-- Specifies what IP address and port(s) to bind to. This is specified -->
+		<!-- as a string in the form "<ip>:<port>,<port>,...,<port>".            -->
+		<!-- For example, "127.0.0.1:1935,80,443". This says to bind to the IP   -->
+		<!-- address of 127.0.0.1 on ports 1935, 80, and 443. You can bind to    -->
+		<!-- any IP by not specifying anything in front of the colon.            -->
+		<!-- For example, ":1935,80,443". This says to bind to any IP on ports   -->
+		<!-- 1935, 80, and 443. If no colon is found, the data is assumed to be  -->
+		<!-- an IP address, and will bind to port 1935 as the default.           -->
+		<!-- For example, "127.0.0.1". This says to bind to IP 127.0.0.1 on port -->
+		<!-- 1935. If a colon is found but no ports are specified after it, port -->
+		<!-- 1935 is used as the default port in which to bind.                  -->
+		<!-- For example, "127.0.0.1:". This says to bind to IP 127.0.0.1 on     -->
+		<!-- port 1935.  If you wish to bind to multiple IP addresses on this    -->
+		<!-- adaptor, specify additional <HostPort> tags; 1 for each additional  -->
+		<!-- IP that you wish to bind to. NOTE: Another adaptor may also try to  -->
+		<!-- bind to the same IP-port combination resulting in a conflict. This  -->
+		<!-- is considered a conflict since it is undesirable to have more than  -->
+		<!-- one adaptor listening on the same IP-port pair. To resolve this     -->
+		<!-- conflict, the first adaptor to do the bind - wins. A warning will   -->
+		<!-- be logged indicating that the specified IP-port combo is in-use.    -->
+		<!--                                                                     -->
+		<!-- The ctl_channel tag attribute controls the internal port that an    -->
+		<!-- amsedge process listens on. When an amscore process is started, it  -->
+		<!-- establishes a control channel with the amsedge process by conneting -->
+		<!-- to it on this internal port. Each <HostPort> tag corresponds to an  -->
+		<!-- amsedge process. If multiple <HostPort> tags exist, then each needs -->
+		<!-- to have a different ctl_channel configured.                         -->
+		<!--                                                                     -->
+		<!-- The rtmfp attribute specifies the UDP port on which the             -->
+		<!-- edge process will listen. If this is not specified, it will default -->
+		<!-- to the value of the HostPort attribute, except it will open a UDP   -->
+		<!-- port. The syntax for this element is identical to the syntax for    -->
+		<!-- the value of the HostPort element.                                  -->
+		<HostPort name="edge1" ctl_channel="localhost:19350" rtmfp="${ADAPTOR.HOSTPORT}">${ADAPTOR.HOSTPORT}</HostPort>
+	</HostPortList>
+
+
+	<!-- This tag specifies that clients can only connect to the server from  -->
+	<!-- the specified hosts. This is specified as a comma delimited list of  -->
+	<!-- hostnames or domain names and/or (full or partial) IP addresses, as  -->
+  <!-- well as the keyword "all" (no quotes required).                      -->
+  <!-- For example:                                                         -->
+  <!-- <Allow>x.foo.com, foo.com, 10.60.1.133, 10.60</Allow> or             -->
+  <!-- <Allow>all</Allow>                                                   -->
+ 	<Allow>all</Allow>
+	<!-- This tag specifies that clients attempting to connect to the server  -->
+	<!-- from the specified hosts will be rejected. This is specified as a    -->
+	<!-- comma  delimited list of hostnames or domain names and/or (full or   -->
+	<!-- partial) IP addresses as well as the keyword "all"(no quotes required)-->
+   <!-- For example:                                                -->
+  <!-- <Deny>x.foo.com, foo.com, 10.60.1.133, 10.60</Deny> or      -->
+  <!-- <Deny>all</Deny>                                            -->
+	<Deny></Deny>
+  <!-- Specifies the order in which to evaluate the <Allow> and <Deny> tags. -->
+  <!-- This can be <Order>Deny,Allow</Order>, which means the request   -->
+  <!-- will be processed if not in <Deny> or in <Allow>. Or it can      -->
+  <!-- be <Order>Allow,Deny</Order>, which means the request will       -->
+  <!-- be processed if in <Allow> and not in <Deny>.                    -->
+  <Order>Allow,Deny</Order>
+
+	<!-- The following section configures the incoming HTTP tunneling    -->
+	<!-- connections. Each edge server may be configured specifically    -->
+	<!-- by repeating the configuration information under an <Edge> tag. -->
+	<HTTPTunnel>
+		<!-- Specifies whether or not to allow tunneling connections     -->
+		<!-- into this application. The acceptable values are true,      -->
+		<!-- false, http1.1only and keepalive. The following describes   -->
+		<!-- the effect of each value,                                   -->
+		<!--    true		allow all tunneling connections              -->
+		<!--    false       disallow all tunneling connections           -->
+		<!--    http1.1only allow only http 1.1 connections              -->
+		<!--    keepalive   allow http 1.1 or http 1.0 keep alive        -->
+		<!--                connections                                  -->
+		<Enable>true</Enable>
+
+		<!-- Configures the max number of requests Flash Player will     -->
+		<!-- allow to be pipelined. Must be >= 1.  Default is 5.         -->
+		<MaxPipelinedRequests>5</MaxPipelinedRequests>
+
+
+		<!-- The following two parameters affect the latency observed by -->
+		<!-- a client tunneling into the server. Low values will reduce  -->
+		<!-- the latency but increase the network bandwidth overhead.    -->
+		<!-- Applications desiring low latency may use 128/256 for idle  -->
+		<!-- post and ack intervals, while those not susceptible to high -->
+		<!-- latencies may use 1024/2048. The default setting provides   -->
+		<!-- medium latency and is set at 512/512.                       -->
+
+		<!-- This specifies the interval at which the client should send -->
+		<!-- idle posts to the server to indicate that the player has no -->
+		<!-- data to send. This is needed to enable the server to send   -->
+		<!-- downstream data. This interval is specified in milliseconds -->
+		<!-- and must be in the range 0 to 4064 msec.                    -->
+		<IdlePostInterval>512</IdlePostInterval>
+
+		<!-- This specifies the max time the server may wait before it   -->
+		<!-- sends back an ack for a client idle post.                   -->
+		<IdleAckInterval>512</IdleAckInterval>
+
+		<!-- Configures how long (in sec.) to allow HTTP tunnel sessions   -->
+		<!-- to remain idle before they are disconnected.                  -->
+		<!-- A value of -1 indicates that sessions never timeout.          -->
+		<!-- By default, it is set to 60 seconds.                           -->
+		<IdleTimeout>60</IdleTimeout>
+
+		<!-- This specifies the default mime type header sent on tunnel  -->
+		<!-- responses. In general the server always uses the mime type  -->
+		<!-- specified by the incoming requests. The server will use the -->
+		<!-- following only if it could not determine the mime type from -->
+		<!-- incoming requests.                                          -->
+		<MimeType>application/x-fcs</MimeType>
+
+		<!-- This specifies the size (in KB) of the write buffer. The    -->
+		<!-- default is 16Kb.                                            -->
+		<WriteBufferSize>16</WriteBufferSize>
+
+		<!-- This specifies whether we should set a cookie. A cookie is  -->
+		<!-- needed when dealing that load balancers, so that requests   -->
+		<!-- corresponding to one net connection are always sent to the  -->
+		<!-- same server. The cookie does add to the http header size so -->
+		<!-- will result in a higher bandwidth overhead.                 -->
+		<SetCookie>false</SetCookie>
+
+		<!-- This specifies whether we are redirecting unknown requests  -->
+		<!-- to an external server. An unknown request may come in only  -->
+		<!-- as the first request on a newly accepted connection, at any -->
+		<!-- other time it is considered an error, and the connection is -->
+		<!-- closed. Unknown requests are redirected by byte proxying to -->
+		<!-- the specified redirect host. For redirection to work http   -->
+		<!-- tunneling must be enabled.                                  -->
+		<!-- Request redirection to a specific host can be further       -->
+		<!-- controlled based upon port on which the request arrived.    -->
+		<!-- The bufsiz attribute determines how big the io buffers are. -->
+		<!-- Flow control kicks in when the buffer in either direction   -->
+		<!-- fills up, automatically handling the case when producers    -->
+		<!-- and consumers differ widely in bandwidth.                   -->
+		<Redirect enable="false" bufsiz="16384">
+			<Host port="80">:8080</Host>
+			<Host port="443">:8443</Host>
+		</Redirect>
+
+		<!-- This specifies whether we are proxying unknown requests to  -->
+		<!-- to an external server. An unknown request may come in at    -->
+		<!-- at any time, intermingled with tunneling requests. Unknown  -->
+		<!-- requests are handled by byte proxying to the specified      -->
+		<!-- proxy host, with some basic HTTP protocol handling. For     -->
+		<!-- proxying to work, HTTP tunneling must be enabled.           -->
+		<!-- Request proxying to a specific host can be further          -->
+		<!-- controlled based upon port on which the request arrived.    -->
+		<!-- The bufsiz attribute determines how big the io buffers are. -->
+		<!-- Flow control kicks in when the buffer in either direction   -->
+		<!-- fills up, automatically handling the case when producers    -->
+		<!-- and consumers differ widely in bandwidth.                   -->
+		<HttpProxy enable="true" bufsiz="16384">
+			<Host port="80">localhost:8080</Host>
+		</HttpProxy>
+
+		<!-- This specifies whether HTTP 1.0 non-keepalive connections   -->
+		<!-- are to be closed once the response is written, the default  -->
+		<!-- is to close them, which is also the behavior as per spec.   -->
+		<NeedClose>true</NeedClose>
+
+		<!-- Unique node identification to support load balancers. If    -->
+		<!-- specified the following string of upto 9 characters is      -->
+		<!-- prefixed to the tunnel session ids and can be used by the   -->
+		<!-- load balancers to uniquely identify each node in the        -->
+		<!-- cluster. The id must contain url safe characters except for -->
+		<!-- for '.' and '/', which are replaced with '_' and '-'        -->
+		<!-- respectively.                                               -->
+		<NodeID></NodeID>
+
+		<!-- The tunneling protocol ensures that a server will be able   -->
+		<!-- to write every 4 seconds. Sometimes when the connections    -->
+		<!-- close under abnormal conditions, the notification does not  -->
+		<!-- reach the server, the server will continue to queue writes  -->
+		<!-- forever. Additionally, on connections much slower than the  -->
+		<!-- requested bandwidth, or under transient network congestion  -->
+		<!-- conditions, writes may be delayed longer than expected. In  -->
+		<!-- any case, after waiting for at most the MaxWriteDelay time  -->
+		<!-- below (in seconds), the edge will stop pulling data from    -->
+		<!-- the core and queuing it. When the queue is exhausted, or    -->
+		<!-- when write delays drop below the MinWriteDelay value below  -->
+		<!-- (in seconds), the edge will resume queuing for the client.  -->
+		<MaxWriteDelay>20</MaxWriteDelay>
+		<MinWriteDelay>12</MinWriteDelay>
+
+		<!-- Specify the maximum http header line length.  The default   -->
+		<!-- value is 8192 bytes.                                        -->
+		<MaxHeaderLineLength>8192</MaxHeaderLineLength>
+
+		<!-- The above configuration can be specifically tailored on an  -->
+		<!-- edge by edge basis in the following sections.               -->
+		<Edge name="Edge1">
+		    <Enable>true</Enable>
+			<MaxPipelinedRequests>5</MaxPipelinedRequests>
+		    <IdlePostInterval>512</IdlePostInterval>
+		    <IdleAckInterval>512</IdleAckInterval>
+		    <MimeType>application/x-fcs</MimeType>
+		    <WriteBufferSize>16</WriteBufferSize>
+			<SetCookie>false</SetCookie>
+			<Redirect enable="false" bufsiz="16384">
+				<Host port="80">:8080</Host>
+				<Host port="443">:8443</Host>
+			</Redirect>
+			<NeedClose>true</NeedClose>
+			<MaxWriteDelay>40</MaxWriteDelay>
+    </Edge>
+	</HTTPTunnel>
+
+	<!-- The following section determines how to configure secure connections via -->
+	<!-- Secure Sockets Layer protocol known as SSL (and now as TLS).             -->
+	<SSL>
+		<!-- Controls SSL configurations for this adaptor (IP-based virtual host) -->
+		<SSLServerCtx>
+			<!-- Specifies location of certificate file to send to client. If an  -->
+			<!-- absolute path is not specified, the certificate is assumed to be -->
+			<!-- relative to the adaptor directory.                               -->
+			<SSLCertificateFile>/opt/adobe/certs/server.crt</SSLCertificateFile>
+
+			<!-- Specifies location of private key file for the certificate. If   -->
+			<!-- an absolute path is not specified, the key file is assumed to be -->
+			<!-- relative to the adaptor directory. If the key file is encrypted, -->
+			<!-- the pass phrase must be specified in the SSLPassPhrase tag.      -->
+			<!-- The type attribute specifies the type of encoding used for the   -->
+			<!-- certificate key file. This can be either "PEM" or "ASN1". By     -->
+			<!-- default, this is "PEM".                                          -->
+            <SSLCertificateKeyFile type="PEM">/opt/adobe/certs/server.key</SSLCertificateKeyFile>
+
+			<!-- Specifies the passphrase to use for decrypting the private key   -->
+			<!-- file. If the private key file is not encrypted, leave this tag   -->
+			<!-- empty.                                                           -->
+			<SSLPassPhrase></SSLPassPhrase>
+
+			<!-- Specifies the ciphers to use. This ia a list of colon delimited  -->
+			<!-- components. A component can be a key exchange algorithm,         -->
+			<!-- authentication method, encryption method, digest type, or one of -->
+			<!-- a selected number of aliases for common groupings. For a list of -->
+			<!-- components, please refer to the AMS documentation. Do not change -->
+			<!-- the default settings unless you know what you are doing.         -->
+			<SSLCipherSuite>ECDH+AESGCM:DH+AESGCM:ECDH+AES256:DH+AES256:ECDH+AES128:DH+AES:ECDH+3DES:DH+3DES:RSA+AESGCM:RSA+AES:RSA+3DES:AES128-SHA:ECDHE-RSA-AES128-SHA:!aNULL:!MD5:!DSS</SSLCipherSuite>
+
+			<!-- Specifies how long (in minutes) a session remains valid. Any     -->
+			<!-- attempt to set this less than 1 minute will result in timeout    -->
+			<!-- being set to 1 minute.                                           -->
+			<SSLSessionTimeout>5</SSLSessionTimeout>
+
+			<!-- Set certificate verifcation level for client authentication.     -->
+			<!-- The following are valid levels:                                  -->
+			<!--                                                                  -->
+			<!-- none - server will not send request for client certificate.      -->
+			<!-- optional - server will send a request for a client certificate.  -->
+			<!--            The client may (or may not) send a certificate. If    -->
+			<!--            sent, it is checked. If certificate verification      -->
+			<!--            fails, TLS/SSL handshake is immediately terminated.   -->
+			<!-- required - server will send a request for a client certificate.  -->
+			<!--            If the client does not send one, TLS/SSL handshake is -->
+			<!--            immediately terminated.                               -->
+			<!-- optional_no_ca - server will send a request for a client cert.   -->
+			<!--                  But the certificate need not be successfully    -->
+			<!--                  verifiable. This should not be used in a        -->
+			<!--                  production deployment, but can be useful for    -->
+			<!--                  testing/debugging purposes.                     -->
+			<!--                                                                  -->
+			<!-- Default is none. The log attribute specifies whether or not to   -->
+			<!-- log when client certificate verification passes or fails.        -->
+			<SSLVerifyClient log="false">none</SSLVerifyClient>
+
+			<!-- Maximum depth of CA certificates allowed in client certificate   -->
+			<!-- verification. 0 means only self-signed certs are accepted.       -->
+			<SSLVerifyDepth>9</SSLVerifyDepth>
+
+		</SSLServerCtx>
+	</SSL>
+
+	<!-- Whether the server should respond to an HTTP identification request -->
+	<!-- from a client. If enabled all the tags within the HTTPIdent section -->
+	<!-- will be returned as a response. The entire response will be         -->
+	<!-- enclosed in <fcs></fcs> tags, which are automatically added and do  -->
+	<!-- not need to be specified below. If it is enabled but no content is  -->
+	<!-- specified then an empty <fcs></fcs> response is returned.           -->
+	<!--                                                                     -->
+	<!-- For an ident response to be returned, HTTPIdent must be enabled and -->
+	<!-- the client must specifically do a POST or GET for "/fcs/ident"      -->
+	<!-- resource.                                                           -->
+	<HTTPIdent enable="false">
+		<!-- Insert xml identification section here.                         -->
+	</HTTPIdent>
+
+	<!-- This tag is used to provide better RTMPT support with load balancers. -->
+	<!-- Because RTMPT sessions consist of multiple sockets, load balancers    -->
+	<!-- may send each socket connection to a different AMS server, there by   -->
+	<!-- splitting the session. This tag specifies an IP address for the       -->
+	<!-- player to use instead of a hostname when making the RTMPT connection  -->
+	<!-- to AMS. If nothing is specified, AMS will automatically determine the -->
+	<!-- IP to use. This will be left blank most of the time. But it can also  -->
+	<!-- be used as a way to redirect RTMPT connections to a totally different -->
+	<!-- AMS server by specifying the IP of that server. If disabled, AMS will -->
+	<!-- return an empty string and the player will use the original hostname  -->
+	<!-- specified in the NetConnection uri. NOTE: this functionality will     -->
+	<!-- only work with Flash Player version 9.0.60 and later.                 -->
+	<HTTPIdent2 enable="true">${ADAPTOR.HTTPIDENT2}</HTTPIdent2>
+
+	<!-- Whether the server should respond to GET for "/" resource.           -->
+	<!-- Disabled by default.                                                 -->
+	<HTTPNull enable="false"></HTTPNull>
+
+	<!-- Whether the server should respond to a request from a client for user -->
+	<!-- defined information. User defined information is stored in an xml     -->
+	<!-- file.                                                                 -->
+	<!--    Example user content:                                              -->
+	<!--    <?xml version="1.0" encoding="utf-8" ?>                            -->
+	<!--    <serverip>                                                         -->
+	<!--    <ip>127.0.0.1</ip>                                                 -->
+	<!--    </serverip>                                                        -->
+	<!--                                                                       -->
+	<!-- If enabled, tags within this user defined xml file                    -->
+	<!-- will be returned as a response. The entire response will be enclosed  -->
+	<!-- in <fcs></fcs> tags, which are automatically added and                -->
+	<!-- do not need to be specified in the xml file. If it is enabled but no  -->
+	<!-- content is found then an empty <fcs></fcs> response is returned.      -->
+	<!--                                                                       -->
+	<!-- For a uInfo response to be returned, HTTPUserInfo must be enabled     -->
+	<!-- and the client must specifically do a POST or GET for "/fcs/uInfo"    -->
+	<!-- and specify the name of the xml file.  For example, if the path       -->
+	<!-- is set to c:/myUserInfoFolder, a response for "/fcs/uInfo/bar.xml"    -->
+	<!-- will return the content in c:/myUserInfoFolder/bar.xml.               -->
+	<HTTPUserInfo enable="false">
+		<!-- This specifies the absolute path of the folder where the      -->
+		<!-- server looks for xml files.  By default, it is set to         -->
+		<!-- uInfo/ in the AMS install directory.                          -->
+		<Path></Path>
+		<!-- This specifies the maximum number of http request the server    -->
+		<!-- keeps in cache.  When the cache size reach the <MaxSize>, the   -->
+		<!-- server will trim down the cache.  By default, the value is 100. -->
+		<MaxSize></MaxSize>
+		<!-- This specifies how often the server refresh the cache content   -->
+		<!-- in milliseconds.  By default, the value is 5000 milliseconds.   -->
+		<UpdateInterval></UpdateInterval>
+	</HTTPUserInfo>
+
+	<!-- Whether an alternate vhost may be specified as a part of the rtmp   -->
+	<!-- url as query parameter - rtmp://host1/app/?_fcs_vhost=host2. This   -->
+	<!-- does not apply to admin connections which are always on by default. -->
+	<!-- The default value is false.                                         -->
+	<EnableAltVhost></EnableAltVhost>
+
+	<!-- Details and configurations for different versions of RTMP		-->
+  <RTMP>
+    <!-- RTMPE is the encrypted RTMP protocol covering both RTMPE and RTMPTE -->
+    <!-- This is enabled by default, setting enabled to "false will not	 -->
+    <!-- allow these protocols on this adaptor				 -->
+    <RTMPE enabled="true"></RTMPE>
+  </RTMP>
+
+  <!-- RTMFP is the secure, UDP based successor to RTMP.                -->
+  <!-- A value of "true" enables RTMFP. Any other value disables RTMFP. -->
+  <RTMFP enable="true">
+
+    <!-- Frequency (in s) at which stats are updated for RTMFP           -->
+    <!-- connections. Must be at least 1.                                -->
+    <UpdateStatsInterval>5</UpdateStatsInterval>
+	<!-- Max value of the send buffer size. Rtmfp can auto-tune the send -->
+	<!-- buffer size at runtime, but not greater than this value.       -->
+	<!-- Default is 2MB. This value can not be set less than 127 KB		-->
+	<FlowSendMaxBufferSize>2097152</FlowSendMaxBufferSize>
+	<!-- Max unsent age of the send buffer allowed. Default is 8000 ms -->
+	<FlowSendMaxUnsentAge>8000</FlowSendMaxUnsentAge>
+
+    <!-- RTMFP clients periodically send keep alive packets on RTMFP           -->
+    <!-- connections.                                                          -->
+    <!-- These configuration parameters are sent to clients to enable them     -->
+    <!-- to set the time interval between keep alives that they send on the    -->
+    <!-- server connection and on connections to other peers.                  -->
+    <!-- Generally higher keep alive times can lead to better scalability,     -->
+    <!-- at the tradeoff of possibly having connections closed by NAT or       -->
+    <!-- firewall timeouts.                                                    -->
+    <KeepAliveTime>
+
+      <!-- Frequency (in s) at which RTMFP keep alives are sent when the       -->
+      <!-- client is detected to not be behind a NAT.                          -->
+      <!-- Must be in the range 5-300 seconds.                                 -->
+      <!-- Defaults to 20 seconds.                                             -->
+      <NoNAT>
+          <Server>20</Server>
+          <Peers>20</Peers>
+      </NoNAT>
+
+      <!-- Frequency (in s) at which RTMFP keep alives are sent when the       -->
+      <!-- client is detected to be behind a NAT.                              -->
+      <!-- Must be in the range 5-300 seconds.                                 -->
+      <!-- Defaults to 15 seconds for the server connection and 10 seconds for -->
+      <!-- peer connections.                                                   -->
+      <NAT>
+         <Server>15</Server>
+         <Peers>10</Peers>
+      </NAT>
+
+    </KeepAliveTime>
+
+    <!-- Method in which RTMFP should deal with forwarded ihellos.                      -->
+    <!-- This has three potential modes:                                                -->
+    <!--                                                                                -->
+    <!-- "rhello"   - this is the default and should be suitable for most situtations.  -->
+    <!--                                                                                -->
+    <!-- "redirect" - when certain network interfaces are present on the AMS machine    -->
+    <!--              (generally these are fake, 1-way interfaces, such as a virtual    -->
+    <!--              interface ) the rhello method may result in clients attempting to -->
+    <!--              contact the AMS by sending packets to incompatible interfaces.    -->
+    <!--              this can result in poor connectivity. setting to redirect may fix -->
+    <!--              this situation, but at the cost of a potentially higher           -->
+    <!--              connection time.                                                  -->
+    <!--                                                                                -->
+    <!-- "ignore"   - do not send any response packet from the AMS. This should also    -->
+    <!--              prevent the above issue, but may prevent UDP hole punching from   -->
+    <!--              working on the server side (situations where the AMS is behind    -->
+    <!--              a NAT/firewall).                                                   -->
+    <ForwardIHelloMode>rhello</ForwardIHelloMode>
+
+    <Core>
+      <HostPortList>
+        <!-- In order to accept RTMFP connections, each core process must listen -->
+        <!-- on at least one UDP port. Rtmfp connections will initially connect  -->
+        <!-- a port specified by the <Adaptor><HostPortList> attribute, but will -->
+        <!-- be redirected to a UDP port on an individual core process. Thus the -->
+        <!-- port must be publicly accessible but should not be referred to      -->
+        <!-- directly from client NetConnections.                                -->
+        <!--                                                                     -->
+        <!-- The HostPortList and HostPort elements specify the ports core       -->
+        <!-- processes may use. The HostPortList element contains a set of       -->
+        <!-- HostPort elements. Each HostPort specifies a set of UDP ports.      -->
+        <!-- Upon startup, each core will be assigned one UDP port from each     -->
+        <!-- HostPort set. If unspecified, the core processes will listen on     -->
+        <!-- :19350-65535. The value of the HostPort element must be in the      -->
+        <!-- following format:                                                   -->
+        <!--                                                                     -->
+        <!--     <value-of-host-ports>                                           -->
+        <!--         := [<host-port-range> [; <host-port-range> [; ... ] ] ]     -->
+        <!--                                                                     -->
+        <!--     <host-port-range> := [<host>][:<port-range>[, <port-range> ] ]  -->
+        <!--     <port-range> := <start-port>[ - <end-port> ]                    -->
+        <!--                                                                     -->
+        <!--                                                                     -->
+        <!-- Each HostPort element can specify a public address that will        -->
+        <!-- correspond to the specified port. This will be the address that is  -->
+        <!-- advertised to clients for the given HostPort. This can be done by   -->
+        <!-- specifying a value to the "public" attribute of the HostPort        -->
+        <!-- element. The "public" attribute should have the same format as the  -->
+        <!-- HostPort element value. The number of ports specified by the        -->
+        <!-- "public" attribute must equal the number of ports specified by the  -->
+        <!-- HostPort element. If the core listens on the n-th port from the     -->
+        <!-- HostPort value, the n-th port of the "public" attribute will be     -->
+        <!-- reported as its value.                                              -->
+        <!--                                                                     -->
+        <!-- Example of HostPortList:                                            -->
+        <!--                                                                     -->
+        <!-- <HostPortList>                                                      -->
+        <!--     <HostPort>host1:2000-2010; host2:3000-3010</HostPort>           -->
+        <!--     <HostPort>host2:5000; host2:3010-4000</HostPort>                -->
+        <!-- </HostPortList>                                                     -->
+        <!--                                                                     -->
+        <!-- Each core will listen to two ports:                                 -->
+        <!--     one port from either of host1:2000-2010 or host2:3000-3010      -->
+        <!--     one port from either of host2:5000 or host2:3010-4000           -->
+        <!--                                                                     -->
+        <!-- Example of HostPortList with public attribute:                      -->
+        <!--                                                                     -->
+        <!-- <HostPortList>                                                      -->
+        <!--     <HostPort public="host2:4000-5000">host1:1000-2000</HostPort>   -->
+        <!-- </HostPortList>                                                     -->
+        <!--                                                                     -->
+        <!-- If a core listens on host1:1005, its publicly advertised address    -->
+        <!-- will be host2:4005.                                                 -->
+        <!--                                                                     -->
+        <HostPort>:19350-65535</HostPort>
+      </HostPortList>
+    </Core>
+  </RTMFP>
+</Adaptor>
