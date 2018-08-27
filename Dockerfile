@@ -1,5 +1,5 @@
 FROM centos:6
-MAINTAINER Adrian Oprea<adrian@codesi.nz>
+MAINTAINER Adrian Oprea<adrian@oprea.rocks>
 
 RUN rpm --import https://getfedora.org/static/0608B895.txt
 RUN yum update -y && yum install -y tar python-setuptools
